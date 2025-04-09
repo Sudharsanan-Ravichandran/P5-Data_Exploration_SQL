@@ -1,10 +1,8 @@
 # P5-Data_Exploration_SQL
 
-To include the 10 advanced SQL questions and their solutions in a GitHub project, you can format them in a `README.md` file using **GitHub Flavored Markdown**. Below is an example of how to structure the content:
 
----
 
-# Advanced SQL Project: Sustainability Dataset Analysis
+# Advanced SQL Project: Green Supply Chain Analysis
 
 This repository contains advanced SQL queries for analyzing a sustainability dataset. The project focuses on solving complex problems related to renewable energy usage, CO2 emissions, and other sustainability metrics.
 
@@ -13,7 +11,7 @@ This repository contains advanced SQL queries for analyzing a sustainability dat
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Dataset Description](#dataset-description)
-3. [Advanced SQL Questions](#advanced-sql-questions)
+3. [Understanding business through SQL data exploration](#Understanding-business-through-SQL-data-exploration)
    - [1. Hierarchical Material Efficiency](#1-hierarchical-material-efficiency)
    - [2. Nested Sustainability Tiers](#2-nested-sustainability-tiers)
    - [3. Recursive Supply Chain Impact](#3-recursive-supply-chain-impact)
@@ -51,7 +49,7 @@ The dataset includes the following columns:
 
 ---
 
-## Advanced SQL Questions
+## Understanding business through SQL data exploration
 
 ### 1. Hierarchical Material Efficiency
 Identify products where raw material usage exceeds the average of their product type, and rank them within their industry using a moving average of CO2 emissions.
@@ -77,6 +75,24 @@ FROM green_supply_chain g
 JOIN ProductAverages pa ON g.Product_Type = pa.Product_Type
 WHERE g.Raw_Material_Usage_kg > pa.Avg_Material_Usage;
 ```
+*Sample result*
+
+```      ID    Product_Type  Raw_Material_Usage_kg  Moving_Avg_CO2
+0     16         Apparel             169.390636      861.245738
+1     21         Apparel             122.342333      887.493884
+2     44         Apparel             130.130215      695.092154
+3     58         Apparel             180.630315      533.164084
+4     65         Apparel             157.350247      443.304000
+..   ...             ...                    ...             ...
+500  953  Pharmaceutical             154.455066      741.284390
+501  961  Pharmaceutical             192.319562      657.310585
+502  971  Pharmaceutical             150.097845      641.873253
+503  976  Pharmaceutical             159.153143      558.100330
+504  988  Pharmaceutical             131.068281      392.425161
+
+[505 rows x 4 columns]
+```
+The full result of this query is available [here](results/recursive_supply_chain.csv).
 
 ---
 
@@ -101,6 +117,12 @@ FROM EnergyTiers
 GROUP BY Tier;
 ```
 
+*Sample result*
+
+```
+```
+The full result of this query is available [here](results/recursive_supply_chain.csv).
+
 ---
 
 ### 3. Recursive Supply Chain Impact
@@ -124,6 +146,12 @@ WITH RECURSIVE EmissionChain AS (
 SELECT MAX(Cumulative_CO2) AS Max_Chain_Impact FROM EmissionChain;
 ```
 
+*Sample result*
+
+```
+```
+The full result of this query is available [here](results/recursive_supply_chain.csv).
+
 ---
 
 ### 4. Pivoted Renewable Energy Analysis
@@ -136,6 +164,12 @@ SELECT
 FROM green_supply_chain
 GROUP BY Product_Type;
 ```
+
+*Sample result*
+
+```
+```
+The full result of this query is available [here](results/recursive_supply_chain.csv).
 
 ---
 
@@ -150,6 +184,140 @@ ORDER BY ID
 LIMIT 10;
 ```
 
+*Sample result*
+
+```
+```
+The full result of this query is available [here](results/recursive_supply_chain.csv).
+
+---
+
+### **6. Temporal Sustainability Trends**
+*Compare quarterly average sustainability scores using generated dates (if no date column, simulate quarters using ID ranges).*  
+```sql
+WITH SimulatedQuarters AS (
+    SELECT *,
+        CASE 
+            WHEN ID % 4 = 0 THEN 'Q4' 
+            WHEN ID % 3 = 0 THEN 'Q3' 
+            WHEN ID % 2 = 0 THEN 'Q2' 
+            ELSE 'Q1' 
+        END AS Quarter
+    FROM green_supply_chain
+)
+SELECT 
+    Quarter,
+    AVG(Sustainability_Score) AS Avg_Score,
+    LAG(AVG(Sustainability_Score)) OVER (ORDER BY MIN(ID)) AS Prev_Quarter_Score
+FROM SimulatedQuarters
+GROUP BY Quarter;
+```
+*Sample result*
+
+```
+```
+The full result of this query is available [here](results/recursive_supply_chain.csv).
+
+---
+
+### **7. Anti-Join for Anomaly Detection**
+*Find products with below-average sustainability scores but above-average renewable energy usage.*  
+```sql
+SELECT *
+FROM green_supply_chain g
+WHERE g.Sustainability_Score  40 OR Cost_USD < 5000)
+ORDER BY Sustainability_Score DESC;
+```
+  
+```sql
+CREATE INDEX idx_product_renewable_cost ON green_supply_chain 
+(Product_Type, Renewable_Energy_Percentage, Cost_USD, Sustainability_Score);
+```
+
+*Sample result*
+
+```
+```
+The full result of this query is available [here](results/recursive_supply_chain.csv).
+
+---
+
+### 8. Dynamic Threshold Optimization
+*Create a function to calculate energy efficiency benchmarks that adjust based on product type.*
+
+```sql
+DELIMITER //
+CREATE FUNCTION GetEnergyBenchmark(product_type VARCHAR(50)) 
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    DECLARE benchmark DECIMAL(10,2);
+    SELECT AVG(Energy_Consumption_kWh) * 0.85 INTO benchmark
+    FROM green_supply_chain
+    WHERE Product_Type = product_type;
+    RETURN benchmark;
+END //
+DELIMITER ;
+
+SELECT ID, Energy_Consumption_kWh, GetEnergyBenchmark(Product_Type) AS Benchmark
+FROM green_supply_chain;
+```
+
+*Sample result*
+```
+```
+The full result of this query is available [here](results/energy_efficiency_benchmarks.csv).
+
+---
+
+### 9. Materialized View for Frequent Aggregates
+*Precompute and refresh daily stats for high-traffic sustainability dashboards.*
+
+```sql
+CREATE MATERIALIZED VIEW DailySustainability AS
+SELECT 
+    Product_Type,
+    COUNT(*) AS Product_Count,
+    AVG(CO2_Emissions_kg) AS Avg_CO2,
+    SUM(Renewable_Energy_Percentage) AS Total_Renewables
+FROM green_supply_chain
+GROUP BY Product_Type;
+```
+
+*Sample result*
+```
+```
+The full result of this query is available [here](results/daily_sustainability.csv).
+
+---
+
+### 10. Multi-Criteria Indexing Challenge
+*Optimize this slow-running query without changing its logic:*
+
+**Problem Query**
+```sql
+SELECT *
+FROM green_supply_chain
+WHERE Product_Type = 'Pharmaceutical'
+AND (Renewable_Energy_Percentage > 40 OR Cost_USD < 5000)
+ORDER BY Sustainability_Score DESC;
+```
+
+**Solution**
+```sql
+CREATE INDEX idx_product_renewable_cost ON green_supply_chain 
+(Product_Type, Renewable_Energy_Percentage, Cost_USD, Sustainability_Score);
+```
+
+*Sample result*
+```
+```
+The full result of this query is available [here](results/multi_criteria_indexing.csv).
+
+---
+
+---
+Antwort von Perplexity: pplx.ai/share
 
 
 ---
@@ -177,129 +345,3 @@ Feel free to contribute by submitting pull requests or opening issues!
 This structure is clear, professional, and GitHub-friendly! You can copy it into your `README.md` file and push it to your GitHub repository following standard Git commands (`git add .`, `git commit`, `git push`). Let me know if you'd like further assistance!
 
 
-To include the results of the SQL queries in your GitHub repository, you can use **Markdown tables** or **code blocks** within the `README.md` file. Here's how you can format the results:
-
----
-
-### **1. Use Markdown Tables for Results**
-
-Markdown tables are an excellent way to display query results. Here's an example:
-
-#### Query: Hierarchical Material Efficiency
-```sql
-WITH ProductAverages AS (
-    SELECT 
-        Product_Type,
-        AVG(Raw_Material_Usage_kg) AS Avg_Material_Usage
-    FROM green_supply_chain
-    GROUP BY Product_Type
-)
-SELECT 
-    g.ID,
-    g.Product_Type,
-    g.Raw_Material_Usage_kg,
-    AVG(g.CO2_Emissions_kg) OVER (
-        PARTITION BY g.Product_Type 
-        ORDER BY g.ID 
-        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
-    ) AS Moving_Avg_CO2
-FROM green_supply_chain g
-JOIN ProductAverages pa ON g.Product_Type = pa.Product_Type
-WHERE g.Raw_Material_Usage_kg > pa.Avg_Material_Usage;
-```
-
-**Result:**
-| ID   | Product_Type   | Raw_Material_Usage_kg | Moving_Avg_CO2 |
-|------|----------------|------------------------|----------------|
-| 101  | Automotive     | 120.5                 | 75.3           |
-| 102  | Automotive     | 130.7                 | 80.1           |
-| 201  | Pharmaceutical | 90.2                  | 50.6           |
-
----
-
-### **2. Use Code Blocks for Large Results**
-
-For larger result sets, you can include them as code blocks to maintain readability:
-
-#### Query: Pivoted Renewable Energy Analysis
-```sql
-SELECT 
-    Product_Type,
-    COUNT(CASE WHEN Renewable_Energy_Percentage  60 THEN 1 END) AS High_Renewables
-FROM green_supply_chain
-GROUP BY Product_Type;
-```
-
-**Result:**
-```plaintext
-Product_Type       Low_Renewables   Medium_Renewables   High_Renewables
-Automotive         15               25                 10
-Pharmaceutical     5                10                 20
-Food               8                12                 15
-```
-
----
-
-### **3. Include CSV/JSON Files for Full Results**
-
-If the query results are too large to include directly in the `README.md`, you can:
-
-1. Save the results as a CSV or JSON file.
-2. Add these files to your repository in a `results/` directory.
-3. Reference them in your `README.md` file with links.
-
-Example:
-- Save the result of "Recursive Supply Chain Impact" as `results/recursive_supply_chain.csv`.
-- Reference it in the README:
-   ```markdown
-   **Query: Recursive Supply Chain Impact**
-
-   The full result of this query is available [here](results/recursive_supply_chain.csv).
-   ```
-
----
-
-### **4. Combine Queries and Results in Separate Files**
-
-For a cleaner structure, you can create a `queries/` folder for SQL scripts and a `results/` folder for their outputs.
-
-Example directory structure:
-```
-sustainability-sql-project/
-├── README.md
-├── queries/
-│   ├── hierarchical_efficiency.sql
-│   ├── pivoted_analysis.sql
-│   └── recursive_supply_chain.sql
-├── results/
-│   ├── hierarchical_efficiency.csv
-│   ├── pivoted_analysis.csv
-│   └── recursive_supply_chain.csv
-```
-
-In the README, link to these files:
-```markdown
-### Query: Hierarchical Material Efficiency
-
-SQL Script: [hierarchical_efficiency.sql](queries/hierarchical_efficiency.sql)  
-Result: [hierarchical_efficiency.csv](results/hierarchical_efficiency.csv)
-```
-
----
-
-### **5. Automate Result Generation**
-
-If you're running these queries frequently, consider automating result generation using a script (e.g., Python or Bash). For example:
-
-- Use Python with `pymysql` or `sqlalchemy` to execute queries and save results as CSVs.
-- Include the script in your GitHub repository:
-   ```
-   python generate_results.py
-   ```
-
----
-
-By combining these approaches, you can make your GitHub project professional and easy to navigate while keeping it scalable for large datasets or complex queries!
-
----
-Antwort von Perplexity: pplx.ai/share
