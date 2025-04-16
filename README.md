@@ -326,8 +326,8 @@ Antwort von Perplexity: pplx.ai/share
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/sustainability-sql-project.git
-   cd sustainability-sql-project
+   git clone https://github.com/Sudharsanan-Ravichandran/P5-Green_Supply_Chain_SQL.git
+   cd P5-Green_Supply_Chain_SQL
    ```
 
 2. Import the dataset into your database:
